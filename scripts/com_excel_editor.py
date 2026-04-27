@@ -307,6 +307,10 @@ class SheetWrapper:
         """Add a legacy note (yellow sticky) to a cell.
 
         If a note already exists it is replaced.
+
+        Uses ``Range.NoteText()`` instead of ``Range.AddComment()``
+        because AddComment triggers RPC failures on machines with
+        corporate COM add-ins (e.g. Enterprise Connect).
         """
         cell = self._sheet.Cells(row, col)
         try:
@@ -314,11 +318,7 @@ class SheetWrapper:
                 cell.Comment.Delete()
         except pywintypes.com_error:
             pass
-        self._ensure_calc_auto()
-        try:
-            cell.AddComment(text)
-        finally:
-            self._restore_calc()
+        cell.NoteText(text)
         print(f"  Note added at ({row},{col})")
 
     def delete_note(self, row: int, col: int):
